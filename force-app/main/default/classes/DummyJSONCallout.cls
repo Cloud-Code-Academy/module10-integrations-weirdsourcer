@@ -36,16 +36,25 @@ public with sharing class DummyJSONCallout {
 
 	public static void getDummyJSONUserFromId(String dummyUserId) {
 		// Create HTTP request to send.
-
+		HttpRequest request = new HttpRequest();
+		
 		// Set the endpoint URL. Use direct URL or for best practices use Named Credential.
+		request.setEndpoint('https://dummyjson.com/users/' + dummyUserId);
 
 		// Set the HTTP method to GET.
+		request.setMethod('GET');
 
 		// Send the HTTP request and get the response.
+		HttpResponse response = new Http().send(request);
 
 		// If the HTTP response code is successful, parse the JSON response and update the contact.
-		Contact cont = null;
-		upsert cont DummyJSON_Id__c; //insert/update from the JSON response using the external id (dummyUserId)
+		if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
+			System.debug('####DummyJSONCallout: Response: ' + response.getBody());
+			String jsonResponse = response.getBody();
+			Contact cont = createContactFromJson(jsonResponse);
+			System.debug('#####DummyJSONCallout: Contact: ' + cont);
+			upsert cont DummyJSON_Id__c; //insert/update from the JSON response using the external id (dummyUserId)
+		}
 	}
 
 	/* 
@@ -66,16 +75,37 @@ public with sharing class DummyJSONCallout {
 	@TestVisible // Allows test class to see this method. Since it is private, it would not be visible otherwise.
 	private static Contact createContactFromJson(String jsonResponse) {
 		// Deserialize the JSON string into map of primitive data types.
+		Map<String, Object> jsonMap = (Map<String, Object>) JSON.deserializeUntyped(jsonResponse);
+
+		// Deserialize the address from the JSON response.
+		Map<String, Object> address = (Map<String,Object>) jsonMap.get('address');
+		System.debug('#####DummyJSONCallout: address: ' + address);
+		Map<String, Object> coordinate = (Map<String,Object>) address.get('coordinates');
+		System.debug('#####DummyJSONCallout: coordinate: ' + coordinate);
 
 		// Create a new contact from the JSON response.
+		Contact cont = new Contact(
+			FirstName = (String) jsonMap.get('firstName'),
+			LastName = (String) jsonMap.get('lastName'),
+			Email = (String) jsonMap.get('email'),
+			Phone = (String) jsonMap.get('phone'),
+			Birthdate = Date.valueOf((String) jsonMap.get('birthDate')),
+			DummyJSON_Id__c = String.valueOf(jsonMap.get('id')),
+			MailingStreet = (String) address.get('address'),
+			MailingCity = (String) address.get('city'),
+			MailingPostalCode = (String) address.get('postalCode'),
+			MailingState = (String) address.get('state'),
+			MailingCountry = (String) address.get('country')
+			//MailingLatitude = (Double) coordinate.get('lat'),
+			//MailingLongitude = (Double) coordinate.get('lng')
+		);
 
 		// Set the contact fields from the JSON response.
 
-		// Deserialize the address from the JSON response.
 
 		// Set the address fields on the contact.
 
-		return null;
+		return cont;
 	}
 
 	/* 

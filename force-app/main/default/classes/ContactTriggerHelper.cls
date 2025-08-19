@@ -23,12 +23,15 @@ public with sharing class ContactTriggerHelper{
                 contactsForDummyJSONCall.add(cont);
             }
         }
-        MakeDummyJSONCallout.enqueueContactsForCallout(contactsForDummyJSONCall);
+        if (contactsForDummyJSONCall != null) {
+            MakeDummyJSONCallout.enqueueContactsForCallout(contactsForDummyJSONCall);
+        }
     }
    
     //When a contact is updated
     public static void updateContactForDummyJSON(List<Contact> contactlistToProcess) {
         for (Contact cont : contactlistToProcess) {
+            // if DummyJSON_Id__c is greater than 100, call the postCreateDummyJSONUser API
             MakeDummyJSONCallout.enqueueContactsForCallout(contactlistToProcess);
         }
     }

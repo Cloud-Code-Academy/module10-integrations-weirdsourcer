@@ -49,10 +49,10 @@ public with sharing class DummyJSONCallout {
 
 		// If the HTTP response code is successful, parse the JSON response and update the contact.
 		if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
-			System.debug('####DummyJSONCallout: Response: ' + response.getBody());
+			//system.debug('####DummyJSONCallout: Response: ' + response.getBody());
 			String jsonResponse = response.getBody();
 			Contact cont = createContactFromJson(jsonResponse);
-			System.debug('#####DummyJSONCallout: Contact: ' + cont);
+			//system.debug('#####DummyJSONCallout: Contact: ' + cont);
 			Database.upsert(cont, Contact.DummyJSON_Id__c, AccessLevel.USER_MODE); //insert/update from the JSON response using the external id (dummyUserId)
 		}
 	}
@@ -79,9 +79,9 @@ public with sharing class DummyJSONCallout {
 
 		// Deserialize the address from the JSON response.
 		Map<String, Object> address = (Map<String,Object>) jsonMap.get('address');
-		System.debug('#####DummyJSONCallout: address: ' + address);
+		//system.debug('#####DummyJSONCallout: address: ' + address);
 		Map<String, Object> coordinate = (Map<String,Object>) address.get('coordinates');
-		System.debug('#####DummyJSONCallout: coordinate: ' + coordinate);
+		//system.debug('#####DummyJSONCallout: coordinate: ' + coordinate);
 
 		// Create a new contact from the JSON response.
 		Contact cont = new Contact(
@@ -132,22 +132,22 @@ public with sharing class DummyJSONCallout {
 		request.setMethod('POST');
 		// Set the body using generateDummyJsonUserPayload method.
 		String con = generateDummyJsonUserPayload(contactId);
-		System.debug('####generateDummyJsonUserPayload: ' + con);
+		//system.debug('####generateDummyJsonUserPayload: ' + con);
 		request.setBody(con);
 
 		// Send the HTTP request and get the response.
 		HttpResponse response = new Http().send(request);
-		System.debug('####DummyJSONCallout: Response: ' + response.getBody());
+		//system.debug('####DummyJSONCallout: Response: ' + response.getBody());
 
 		// If the HTTP response code is successful, update the contact.
 		if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
 			Map<String, Object> jsonResponse = (Map<String, Object>) JSON.deserializeUntyped(response.getBody());
 			Contact updateContact = new Contact(
 				DummyJSON_Last_Updated__c = Datetime.now(),
-				DummyJson_Id__c = String.valueOf(jsonResponse.get('id')),
+				//DummyJson_Id__c = String.valueOf(jsonResponse.get('id')), // probably where the error is
 				Id = contactId
 			);
-			System.debug('####DummyJSONCallout: updateContact: ' + updateContact);
+			//system.debug('####DummyJSONCallout: updateContact: ' + updateContact);
 			Database.update(updateContact, AccessLevel.USER_MODE);
 		}
 	}
@@ -183,7 +183,7 @@ public with sharing class DummyJSONCallout {
 			WITH USER_MODE
 			LIMIT 1
 			];
-		System.debug('####contdml: ' + cont);
+		//system.debug('####contdml: ' + cont);
 
 		// Create a map of the field values.
 		Map<String, Object> jsonCon = new Map<String, Object>{
@@ -205,11 +205,11 @@ public with sharing class DummyJSONCallout {
 				}*/
 			}
 		};
-		System.debug('####jsonCon: ' + jsonCon);
+		//system.debug('####jsonCon: ' + jsonCon);
 
 		// Convert the map to a JSON string.
 		String jsonString = JSON.serialize(jsonCon);
-		System.debug('####jsonString: ' + jsonString);
+		//system.debug('####jsonString: ' + jsonString);
 
 		// Serialize the map into a JSON string.
 		// Make sure to check that required contacts fields have a value. Default the value to unknown if it does not exists.

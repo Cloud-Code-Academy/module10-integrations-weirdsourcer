@@ -29,10 +29,13 @@ public with sharing class ContactTriggerHelper{
     }
    
     //When a contact is updated
-    public static void updateContactForDummyJSON(List<Contact> contactlistToProcess) {
+    public static void updateContactForDummyJSON(List<Contact> contactlistToProcess, Map<Id,Contact> oldContactMap) {
+        List<Contact> contactsForDummyJSONCall = new List<Contact>();
         for (Contact cont : contactlistToProcess) {
-            // if DummyJSON_Id__c is greater than 100, call the postCreateDummyJSONUser API
-            MakeDummyJSONCallout.enqueueContactsForCallout(contactlistToProcess);
-        }
+            //Make the future call to post the contact details to the Dummy JSON API
+            contactsForDummyJSONCall.add(cont);
+        }  
+        // if DummyJSON_Id__c is greater than 100, call the postCreateDummyJSONUser API
+        MakeDummyJSONCallout.enqueueContactsForCallout(contactlistToProcess);
     }
 }
